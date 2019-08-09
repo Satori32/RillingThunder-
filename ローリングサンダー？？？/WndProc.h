@@ -60,14 +60,17 @@ class RollingThunderProc : public Window::EventHandler {
 			Y = (std::max<double>)(0, ((std::min)(Y*2, PY)));
 
 			HDC hDc = BeginPaint(hWnd, &PS);			
-			HPEN Pen = CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
-			HPEN OldPen = SelectPen(hDc, Pen);
+
 			float F = 1;
 			double LP = 0.8;
+			std::uniform_int_distribution<> CI(0, 255);
 			MoveToEx(hDc, X,Y, nullptr);
 			TCHAR S[] = _T("Move Mouse on Window. Push LButton to Add. RButton to Sub.");
 			TextOut(hDc, 0, 0, S, std::size(S)-1);
-			for (std::size_t i = 0; i < D.size(); i++) {
+			for (std::size_t i = 0; i < D.size(); i++) {	
+				HPEN Pen = CreatePen(PS_SOLID, 3, RGB(CI(mt),CI(mt),CI(mt)));
+				HPEN OldPen = SelectPen(hDc, Pen);
+
 				std::get<0>(D[i])+= std::get<1>(D[i]);
 				Angle = F*std::fmod(std::get<0>(D[i]), 360.0);
 				std::tie(X, Y) = Rot(Angle, L, X, Y);
@@ -75,39 +78,10 @@ class RollingThunderProc : public Window::EventHandler {
 				F *= -1;
 
 				LineTo(hDc, X, Y);
-				
+				SelectPen(hDc, OldPen);
+				DeletePen(Pen);
 			}
-
-			SelectPen(hDc, OldPen);
-			DeletePen(Pen);
 			EndPaint(hWnd, &PS);			
-			
-			/** /
-
-			if(D.size()==0)	return DefWindowProc(hWnd, msg, wp, lp);
-			RECT rt;
-
-			GetClientRect(hWnd, &rt);
-
-			PAINTSTRUCT PS;
-			
-			HPEN Pen = CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
-			
-			HDC hDc = BeginPaint(hWnd, &PS);
-			HPEN OldPen = SelectPen(hDc, Pen);
-			MoveToEx(hDc, ( rt.right-rt.left) / 2, (rt.bottom - rt.top) / 2, nullptr);
-
-			for (std::size_t i = 1; i < D.size(); i++) {
-				LineTo(hDc, std::get<0>(D[i]), std::get<1>(D[i]));
-			}
-
-
-			SelectPen(hDc, OldPen);
-			DeletePen(Pen);
-			EndPaint(hWnd, &PS);
-
-
-		/**/
 		}
 			break;
 
